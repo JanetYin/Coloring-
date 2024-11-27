@@ -41,7 +41,7 @@ export interface PuzzleInfo {
   description: string;
   hints: string[];
   testCases: TestCase[];
-  // hiddenAnswer?: string; // For special verification
+  
 }
 
 

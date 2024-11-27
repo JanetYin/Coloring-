@@ -14,7 +14,7 @@ interface ColorPaletteProps {
   onColorSelect: (color: string) => void;
   isEraser: boolean;
   setIsEraser: (isEraser: boolean) => void;
-  showDrawingTools?: boolean; // New prop
+  showDrawingTools?: boolean; 
 }
 
 const ColorPalette: React.FC<ColorPaletteProps> = ({ 
@@ -30,7 +30,7 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (!showDrawingTools) return; // Don't handle shortcuts if drawing tools are hidden
+      if (!showDrawingTools) return; 
       
       if (e.key.toLowerCase() === 'p') {
         setIsEraser(false);
@@ -53,7 +53,7 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Only show drawing tools if showDrawingTools is true */}
+      
       {showDrawingTools && (
         <div className="flex gap-4 items-center mb-4">
           <button

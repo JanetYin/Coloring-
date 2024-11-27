@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FileText, TestTube, HelpCircle, Terminal, Send, X, Eye, Check, Palette } from 'lucide-react';
-import { PuzzleInfo, TestCase } from '@/types';
+import { PuzzleInfo} from '@/types';
 
 const GHCiModal = ({ onClose }: { onClose: () => void }) => (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -39,7 +39,6 @@ interface PuzzleModalProps {
 
 const PuzzleModal: React.FC<PuzzleModalProps> = ({ 
   puzzle, 
-  tileId,
   progress = new Set(),
   onClose, 
   onSolve,
@@ -107,14 +106,6 @@ const PuzzleModal: React.FC<PuzzleModalProps> = ({
     setRevealedHints(newRevealedHints);
   };
 
-  const handleRecoverArea = () => {
-    if (!canRecover()) {
-      setError('This area requires hidden tests to be solved');
-      return;
-    }
-    onSolve();
-    onClose();
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

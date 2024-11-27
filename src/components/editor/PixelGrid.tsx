@@ -7,7 +7,6 @@ interface PixelGridProps {
   layerType: 'background' | 'objects' | 'details';
 }
 const PixelGrid: React.FC<PixelGridProps> = ({ grid, selectedColor, onPixelClick }) => {
-  // Create checkerboard pattern for transparent background
   const getCheckerboardColor = (row: number, col: number) => {
     return (row + col) % 2 === 0 ? '#d6c7a3' : '#dbcfb1';
   };

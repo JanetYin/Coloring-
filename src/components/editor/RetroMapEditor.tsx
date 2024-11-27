@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, Upload, Trash2 } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import ColorPalette from '../shared/ColorPalette';
-import type { MapEditorMode, MapData, InteractiveTile, PuzzleInfo, RecoveryArea, TestCase } from '@/types';
+import type { MapEditorMode, MapData, InteractiveTile, RecoveryArea, TestCase } from '@/types';
 import RecoveryAreaModal from '../shared/RecoveryAreaModal';
 
 const RetroMapEditor: React.FC = () => {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import GameStage from './GameStage';
 import PuzzleModal from './PuzzleModal';
 import HelperNoteModal from './NoteModal';
@@ -18,7 +17,6 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showWinModal, setShowWinModal] = useState(false);
-  const [solvedPuzzles, setSolvedPuzzles] = useState<Set<string>>(new Set());
   const [isVictory, setIsVictory] = useState(false);
   const [isExplorationMode, setIsExplorationMode] = useState(false);
 
@@ -28,8 +26,6 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [selectedHelperPoint, setSelectedHelperPoint] = useState<HelperPoint | null>(null);
 
-  const [solvedAreas, setSolvedAreas] = useState<Set<string>>(new Set());
-  const [recoveredCells, setRecoveredCells] = useState<Set<string>>(new Set());
   
   // New state for drawing tools
   const [selectedColor, setSelectedColor] = useState(defaultColors[0]);
@@ -151,8 +147,7 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     let newMapData = { ...currentMapData };
     
     if (currentMode === 'player' && playerData.length > 0) {
-      setIsPlacingPlayer(true); // Add this line
-      // Remove the last player placement if it exists
+      setIsPlacingPlayer(true); 
       if (lastPlayerPosition) {
         newMapData = removeLastPlayer(newMapData);
       }
@@ -210,12 +205,7 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     setSelectedHelperPoint(point);
     setShowNoteModal(true);
   };
-  // Add a helper point right-click handler
-  const handleHelperPointRightClick = (e: React.MouseEvent, point: HelperPoint) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setHelperPoints(points => points.filter(p => p.id !== point.id));
-  };
+  
 
   const handleNoteSubmit = (note: HelperNote) => {
     if (selectedHelperPoint) {
@@ -233,22 +223,10 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     setShowHelpers(!showHelpers);
   };
 
-  const checkWinCondition = (newMapData: MapData) => {
-    if (!mapData) return;
-
-    const allPuzzlesSolved = mapData.interactiveTiles.every(tile => 
-      gameProgress.solvedPuzzles.has(tile.id)
-    );
-
-    if (allPuzzlesSolved) {
-      setIsVictory(true);
-      setShowWinModal(true);
-    }
-  };
 
   useEffect(() => {
     if (mapData) {
-      // Ensure the map is in grayscale initially
+      // grayscale initially
       const grayscaleMap = convertToGrayscale(mapData);
       setCurrentMapData(grayscaleMap);
       setLoading(false);
@@ -266,7 +244,6 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
           tile => tile.position.row === rowIndex && tile.position.col === colIndex
         );
 
-        // Keep original color for interactive tiles, convert others to grayscale
         if (hasInteractiveTile) {
           return color;
         }
@@ -446,7 +423,6 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     }
   };
   
-  // Add useEffect hooks
   useEffect(() => {
     loadGameState();
   }, [mapId, mapData]);

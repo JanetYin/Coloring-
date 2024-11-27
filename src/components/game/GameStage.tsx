@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MapData, InteractiveTile, HelperPoint } from '@/types';
-import { ChevronLeft, User, Paintbrush, Target, StickyNote, Eye, EyeOff, Star, Lock } from 'lucide-react';
+import { User, Paintbrush, Target, Eye, EyeOff, Star, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ColorPalette from '@/components/shared/ColorPalette';
 import { Pixelify_Sans } from 'next/font/google';
@@ -39,10 +39,8 @@ const GameStage: React.FC<GameStageProps> = ({
   setIsEraser,
   onCellClick,
   isPlacingPlayer,
-  setIsPlacingPlayer,
   helperPoints,
   showHelpers,
-  isHelperMode,
   currentMode,
   setCurrentMode,
   onHelperPointClick,

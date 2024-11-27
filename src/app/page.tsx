@@ -10,7 +10,6 @@ import PlayerEditor from '@/components/editor/PlayerEditor';
 import MapSelection from '@/components/editor/MapSelection';
 import { EditorMode, MapData } from '@/types';
 import MapDisplay from '@/components/shared/MapDisplay';
-import { Upload } from 'lucide-react';
 import { FinishedMapResponse ,loadDefaultFinishedMap } from '@/lib/defaultFinishedMap';
 
 const pixelifySans = Pixelify_Sans({ subsets: ['latin'], weight: ['400', '500', '700'] });
@@ -38,7 +37,6 @@ export default function Home() {
   const [isEraser, setIsEraser] = useState(false);
   const [displayMap, setDisplayMap] = useState<MapData | null>(null);
 
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDefaultFinishedMap()
