@@ -19,3 +19,17 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+@keyframes recover-colors {
+  0% {
+    background: rgba(135, 169, 133, 0.3);
+    transform: scale(0.95);
+  }
+  50% {
+    background: rgba(135, 169, 133, 0.5);
+    transform: scale(1.05);
+  }
+  100% {
+    background: transparent;
+    transform: scale(1);
+  }
+}
