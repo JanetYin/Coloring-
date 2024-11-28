@@ -30,8 +30,8 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
         try {
           const parsedMaps = JSON.parse(storedMaps);
           setCustomMaps(parsedMaps);
-        } catch (err) {
-          console.error('Failed to parse stored maps');
+        } catch (error) {
+          alert(`Error loading maps: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
     };
@@ -75,8 +75,8 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
         notification.style.opacity = '0';
         setTimeout(() => document.body.removeChild(notification), 500);
       }, 2000);
-    } catch (err) {
-      alert('Error loading map file. Please ensure it is a valid map JSON file.');
+    } catch (error) {
+      alert(`Error loading map: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
     // Reset file input

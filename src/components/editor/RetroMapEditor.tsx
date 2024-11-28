@@ -268,8 +268,8 @@ const RetroMapEditor: React.FC = () => {
         if (mapData.originalColors) setOriginalColors(mapData.originalColors);
         if (mapData.recoveredAreas) setRecoveredAreas(mapData.recoveredAreas);
         setIsPuzzleMode(Boolean(mapData.originalColors));
-      } catch (err) {
-        alert('Error loading map file');
+      } catch (error) {
+        alert(`Error loading map file: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     };
     reader.readAsText(file);

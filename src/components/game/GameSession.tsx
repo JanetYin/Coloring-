@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; 
 import GameStage from './GameStage';
 import PuzzleModal from './PuzzleModal';
 import HelperNoteModal from './NoteModal';
@@ -366,7 +366,7 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
       return emptyProgress;
     }
   });
-  const saveGameState = () => {
+  const saveGameState = useCallback(() => {
     if (!currentMapData) return;
     
     const savedState: SavedGameState = {
@@ -387,9 +387,9 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     };
   
     localStorage.setItem(`game_state_${mapId}`, JSON.stringify(savedState));
-  };
+  }, [currentMapData, helperPoints, gameProgress, lastPlayerPosition, mapId]);
   
-  const loadGameState = () => {
+  const loadGameState = useCallback(() => {
     const savedState = localStorage.getItem(`game_state_${mapId}`);
     if (!savedState || !mapData) return;
   
@@ -421,16 +421,16 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     } catch (error) {
       console.error('Error loading game state:', error);
     }
-  };
+  }, [mapId, mapData]); 
   
   useEffect(() => {
     loadGameState();
-  }, [mapId, mapData]);
+  }, [loadGameState]);
   
   useEffect(() => {
     saveGameState();
-  }, [currentMapData, helperPoints, gameProgress, lastPlayerPosition]);
-
+  }, [saveGameState]);
+  
   useEffect(() => {
     if (mapId && gameProgress) {
       localStorage.setItem(`game_progress_${mapId}`, JSON.stringify({
