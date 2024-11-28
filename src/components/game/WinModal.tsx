@@ -15,7 +15,7 @@ const WinModal: React.FC<WinModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#e6d9bd] p-8 rounded-lg border-4 border-[#937b6a] max-w-md w-full text-center">
         <h2 className="text-3xl font-bold font-pixel text-[#87a985] mb-6">🎉 Victory! 🎉</h2>
-        <p className="text-lg font-pixel text-[#937b6a] mb-8">You've solved all puzzles!</p>
+        <p className="text-lg font-pixel text-[#937b6a] mb-8">You&apos;ve solved all puzzles!</p>
         <p className="text-md font-pixel text-[#937b6a] mb-4">
           Drawing mode and exports are now unlocked! Continue exploring to decorate the map.
         </p>

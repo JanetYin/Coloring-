@@ -1,20 +1,18 @@
-// lib/defaultFinishedMap.ts
-import type { MapData } from '@/types';
-
+import type { MapData, HelperPoint } from '@/types';
 
 export interface FinishedMapResponse {
     mapData: MapData;
-    helperPoints: any[];
+    helperPoints: HelperPoint[]; 
     gameProgress: {
-      solvedPuzzles: Record<string, any>;
-      recoveredAreas: Record<string, any>;
-      solvedHiddenTests: Record<string, any>;
+      solvedPuzzles: Record<string, boolean>;
+      recoveredAreas: Record<string, boolean>;
+      solvedHiddenTests: Record<string, number[]>; 
     };
     playerPosition: {
       rowIndex: number;
       colIndex: number;
     };
-  }
+}
   
   export async function loadDefaultFinishedMap(): Promise<FinishedMapResponse> {
     try {

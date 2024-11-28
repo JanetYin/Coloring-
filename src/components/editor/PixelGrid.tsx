@@ -2,11 +2,10 @@ import React from 'react';
 
 interface PixelGridProps {
   grid: (string | null)[][];
-  selectedColor: string;
   onPixelClick: (row: number, col: number) => void;
   layerType: 'background' | 'objects' | 'details';
 }
-const PixelGrid: React.FC<PixelGridProps> = ({ grid, selectedColor, onPixelClick }) => {
+const PixelGrid: React.FC<PixelGridProps> = ({ grid, onPixelClick }) => {
   const getCheckerboardColor = (row: number, col: number) => {
     return (row + col) % 2 === 0 ? '#d6c7a3' : '#dbcfb1';
   };

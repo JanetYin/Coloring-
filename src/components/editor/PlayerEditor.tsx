@@ -96,7 +96,6 @@ const PlayerEditor: React.FC<PlayerEditorProps> = ({ selectedColor, isEraser }) 
         <div className="relative group">
           <PixelGrid
             grid={grid}
-            selectedColor={selectedColor}
             onPixelClick={handlePixelClick}
             layerType='objects'
           />

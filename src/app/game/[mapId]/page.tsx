@@ -37,7 +37,7 @@ export default function GamePage({ params }: { params: Promise<{ mapId: string }
           const data = await response.json();
           if (mounted) setMapData(data);
         }
-      } catch (error) {
+      } catch (err) {  
         if (mounted) setError('Failed to load map');
       } finally {
         if (mounted) setLoading(false);

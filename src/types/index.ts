@@ -120,7 +120,10 @@ export interface MapGridProps {
   backgroundLayer: string[][];
   objectsLayer: string[][];
   interactiveTiles: InteractiveTile[];
-  onUpdateLayers: (type: 'background' | 'objects' | 'interactive', data: any) => void;
+  onUpdateLayers: (
+    type: 'background' | 'objects' | 'interactive', 
+    data: string[][] | InteractiveTile[] 
+  ) => void;
 }
 export interface SavedGameState {
   recoveredColors: {

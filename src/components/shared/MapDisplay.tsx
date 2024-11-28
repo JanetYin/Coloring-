@@ -46,13 +46,13 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, className = '' }) => {
   };
 
   return (
-    <div 
-      className="w-full h-full absolute overflow-hidden bg-transparent"
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-    >
+      <div 
+        className={`w-full h-full absolute overflow-hidden bg-transparent ${className}`}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
       <div 
         className="grid absolute cursor-grab"
         style={{
