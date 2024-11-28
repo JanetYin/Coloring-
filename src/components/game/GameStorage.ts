@@ -1,4 +1,3 @@
-
 interface StorageOptions {
   useSessionStorage?: boolean;
   maxRetries?: number;
@@ -57,7 +56,7 @@ export class GameStorage {
     return totalSize;
   }
 
-  private cleanup() {
+  private internalCleanup() {
     if (!this.storage) return;
 
     const items: Array<{ key: string; timestamp: number; size: number }> = [];
@@ -104,6 +103,15 @@ export class GameStorage {
     }
   }
 
+  // Public method for external cleanup
+  public async runCleanup(): Promise<void> {
+    if (this.storage && await this.checkStorageAvailability()) {
+      this.internalCleanup();
+    }
+  }
+
+
+
   async save<T>(key: string, data: T): Promise<boolean> {
     if (!this.storage || !(await this.checkStorageAvailability())) {
       return false;
@@ -127,7 +135,7 @@ export class GameStorage {
 
         // Check if we need to free up space
         if (this.calculateStorageUsage() + dataSize > this.maxStorageSize) {
-          this.cleanup();
+          this.internalCleanup();
         }
 
         this.storage.setItem(prefixedKey, serialized);
@@ -136,7 +144,7 @@ export class GameStorage {
         attempts++;
         
         if (error instanceof Error && error.name === 'QuotaExceededError') {
-          this.cleanup();
+          this.internalCleanup();
           // Use exponential backoff with maximum delay
           const delay = Math.min(100 * Math.pow(2, attempts), this.MAX_RETRY_DELAY);
           await new Promise(resolve => setTimeout(resolve, delay));
