@@ -137,6 +137,7 @@ export interface SavedGameState {
     solvedHiddenTests: Record<string, number[]>;
   };
   lastPlayerPosition: { rowIndex: number; colIndex: number; } | null;
+  timestamp: number;
 }
 
 

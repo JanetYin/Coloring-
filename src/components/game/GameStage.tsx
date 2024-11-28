@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import ColorPalette from '@/components/shared/ColorPalette';
 import { Pixelify_Sans } from 'next/font/google';
 
-
 const pixelifySans = Pixelify_Sans({ subsets: ['latin'], weight: ['400', '500', '700'] });
 
 interface GameStageProps {
@@ -51,6 +50,8 @@ const GameStage: React.FC<GameStageProps> = ({
 }) => {
   const router = useRouter();
   const [showLockTooltip, setShowLockTooltip] = useState(false);
+  const [hoveredTile, setHoveredTile] = useState<string | null>(null);
+  
   const CELL_SIZE = 8;
   const COLS = mapData.backgroundLayer[0].length;
   const ROWS = mapData.backgroundLayer.length;
@@ -62,15 +63,12 @@ const GameStage: React.FC<GameStageProps> = ({
   const scaleY = containerHeight / (ROWS * CELL_SIZE);
   const scale = Math.min(scaleX, scaleY);
 
-
-  // Helper function to determine if we should show the color palette
   const shouldShowPalette = () => {
     if (currentMode === 'helper') return true;
     if (currentMode === 'draw' && isDrawingAllowed) return true;
     return false;
   };
 
-  // Helper function to determine if we should show the pencil/eraser tools
   const shouldShowDrawingTools = () => {
     return currentMode === 'draw' && isDrawingAllowed;
   };
@@ -86,11 +84,9 @@ const GameStage: React.FC<GameStageProps> = ({
         </h2>
       </div>
 
-      {/* Tools Bar */}
       <div className="w-full max-w-[1200px] mx-auto px-6 mb-4">
         <div className="bg-[#e6d9bd] p-4 rounded-lg border-4 border-[#937b6a] shadow-[4px_4px_0px_#937b6a]">
           <div className="flex justify-between items-start">
-            {/* Mode Selection */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setCurrentMode('player')}
@@ -139,7 +135,6 @@ const GameStage: React.FC<GameStageProps> = ({
               </button>
             </div>
 
-            {/* Helper Visibility Toggle */}
             <button
               onClick={toggleHelperVisibility}
               className="px-4 py-2 rounded font-pixel flex items-center gap-2 bg-[#e6d9bd] text-[#937b6a] border-2 border-[#937b6a]"
@@ -149,7 +144,6 @@ const GameStage: React.FC<GameStageProps> = ({
             </button>
           </div>
 
-          {/* Color Palette - Show in helper mode or when drawing is allowed */}
           {shouldShowPalette() && (
             <div className="mt-4 pt-4 border-t-2 border-[#937b6a]">
               <ColorPalette
@@ -157,23 +151,22 @@ const GameStage: React.FC<GameStageProps> = ({
                 onColorSelect={setSelectedColor}
                 isEraser={isEraser}
                 setIsEraser={setIsEraser}
-                showDrawingTools={shouldShowDrawingTools()} // New prop to control pencil/eraser visibility
+                showDrawingTools={shouldShowDrawingTools()}
               />
             </div>
           )}
         </div>
       </div>
 
-      {/* Game Stage */}
       <div className="w-full max-w-[1200px] mx-auto px-6">
-            <div className="bg-[#e6d9bd] p-4 rounded-lg border-4 border-[#937b6a] shadow-[4px_4px_0px_#937b6a] w-full h-[600px] overflow-hidden">
-              <div 
-                className="game-grid-container relative w-full h-full flex items-center justify-center"
-                style={{ 
-                  transform: `scale(${scale})`,
-                  transformOrigin: 'center'
-                }}
-              >
+        <div className="bg-[#e6d9bd] p-4 rounded-lg border-4 border-[#937b6a] shadow-[4px_4px_0px_#937b6a] w-full h-[600px] overflow-hidden">
+          <div 
+            className="game-grid-container relative w-full h-full flex items-center justify-center"
+            style={{ 
+              transform: `scale(${scale})`,
+              transformOrigin: 'center'
+            }}
+          >
             <div 
               className="grid relative"
               style={{
@@ -191,12 +184,15 @@ const GameStage: React.FC<GameStageProps> = ({
                   const helperPoint = helperPoints.find(point => 
                     point.position.row === rowIndex && point.position.col === colIndex
                   );
+                  
+                  const tileId = interactiveTile ? `${rowIndex}-${colIndex}` : null;
+                  const isHovered = tileId === hoveredTile;
 
                   return (
                     <div
                       key={`${rowIndex}-${colIndex}`}
                       className={`relative ${
-                        currentMode !== 'draw' ? 'hover:brightness-110 hover:shadow-inner cursor-pointer' : ''
+                        currentMode !== 'draw' ? 'hover:brightness-110 cursor-pointer' : ''
                       }`}
                       style={{
                         width: `${CELL_SIZE}px`,
@@ -210,8 +206,10 @@ const GameStage: React.FC<GameStageProps> = ({
                           onCellClick(rowIndex, colIndex);
                         }
                       }}
+                      onMouseEnter={() => interactiveTile && setHoveredTile(tileId)}
+                      onMouseLeave={() => interactiveTile && setHoveredTile(null)}
                     >
-                      {/* Background and object layers */}
+                      {/* Background color layer */}
                       {mapData.objectsLayer[rowIndex][colIndex] && (
                         <div
                           className="absolute inset-0"
@@ -219,21 +217,28 @@ const GameStage: React.FC<GameStageProps> = ({
                         />
                       )}
 
-                      {/* Interactive tiles */}
-                      {interactiveTile && currentMode !== 'player' && (
+                      {/* Interactive tile effect - now always visible */}
+                      {interactiveTile && (
                         <div 
-                          className="absolute inset-0 cursor-pointer hover:brightness-110 hover:shadow-inner"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onTriggerPuzzle(interactiveTile);
+                          className={`absolute inset-0 cursor-pointer transition-all duration-300 ${
+                            isHovered ? 'bg-blue-400/20' : ''
+                          }`}
+                          style={{
+                            animation: 'interactive-pulse 2s infinite',
+                            boxShadow: isHovered 
+                              ? '0 0 4px 2px rgba(59, 130, 246, 0.5), inset 0 0 4px 2px rgba(59, 130, 246, 0.5)'  
+                              : '0 0 3px 1px rgba(59, 130, 246, 0.3), inset 0 0 3px 1px rgba(59, 130, 246, 0.3)',
+                            pointerEvents: 'none',
+                            zIndex: 1
                           }}
                         />
                       )}
 
-                      {/* Helper points with stars */}
+                      {/* Helper points layer */}
                       {showHelpers && helperPoint && (
                         <div 
                           className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                          style={{ zIndex: 2 }}
                           onClick={(e) => {
                             e.stopPropagation();
                             onHelperPointClick(helperPoint);
@@ -243,7 +248,7 @@ const GameStage: React.FC<GameStageProps> = ({
                             size={CELL_SIZE}
                             fill={helperPoint.color}
                             stroke="none"  
-                            className="transform scale-100"  // Slightly smaller to fit cell better
+                            className="transform scale-100"  
                           />
                         </div>
                       )}
@@ -253,10 +258,8 @@ const GameStage: React.FC<GameStageProps> = ({
               )}
             </div>
           </div>
-
-          
-
         </div>
+        
         {isDrawingAllowed && (
           <div className="max-w-[1200px] mx-auto px-6 mt-6">
             <div className="flex justify-center gap-4">
@@ -270,7 +273,6 @@ const GameStage: React.FC<GameStageProps> = ({
           </div>
         )}
       </div>
-      
     </div>
   );
 };

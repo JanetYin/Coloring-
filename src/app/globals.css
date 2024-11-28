@@ -33,3 +33,17 @@ body {
     transform: scale(1);
   }
 }
+@keyframes interactive-pulse {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 3px 1px rgba(246, 59, 212, 0.3), inset 0 0 3px 1px rgba(224, 71, 229, 0.522);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 4px 2px rgba(243, 59, 246, 0.4), inset 0 0 4px 2px rgba(246, 59, 202, 0.403);
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 3px 1px rgba(246, 59, 234, 0.3), inset 0 0 3px 1px rgba(217, 65, 231, 0.467);
+  }
+}

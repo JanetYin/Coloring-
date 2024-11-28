@@ -5,6 +5,7 @@ import HelperNoteModal from './NoteModal';
 import { MapData, InteractiveTile, HelperPoint, HelperNote, GameProgress, SavedGameState } from '@/types';
 import { defaultColors } from '@/components/shared/ColorPalette';
 import WinModal from './WinModal';
+import { gameStorage, GameStorage } from './GameStorage';
 
 interface GameSessionProps {
   mapId: string | number;
@@ -139,68 +140,92 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-
+  
+  const handleHelperPointAction = (rowIndex: number, colIndex: number) => {
+    const existingPoint = helperPoints.find(
+      point => point.position.row === rowIndex && point.position.col === colIndex
+    );
+  
+    if (existingPoint) {
+      setHelperPoints(points => points.filter(point => point.id !== existingPoint.id));
+    } else {
+      const newHelperPoint: HelperPoint = {
+        id: `helper_${Date.now()}`,
+        position: { row: rowIndex, col: colIndex },
+        color: selectedColor
+      };
+      
+      setHelperPoints(prevPoints => [...prevPoints, newHelperPoint]);
+      setSelectedHelperPoint(newHelperPoint);
+      setShowNoteModal(true);
+    }
+    // saveGameState will be called automatically by the useEffect
+  };
 
   const handleCellClick = (rowIndex: number, colIndex: number) => {
-    if (!currentMapData || !playerData.length) return;
-    
-    let newMapData = { ...currentMapData };
-    
-    if (currentMode === 'player' && playerData.length > 0) {
-      setIsPlacingPlayer(true); 
-      if (lastPlayerPosition) {
-        newMapData = removeLastPlayer(newMapData);
-      }
-      // Calculate center offset
-      const playerHeight = playerData.length;
-      const playerWidth = playerData[0].length;
-      const startRow = rowIndex - Math.floor(playerHeight / 2);
-      const startCol = colIndex - Math.floor(playerWidth / 2);
-
-      // Place player sprite centered on click position
-      for (let i = 0; i < playerHeight; i++) {
-        for (let j = 0; j < playerWidth; j++) {
-          const currentRow = startRow + i;
-          const currentCol = startCol + j;
-          
-          if (currentRow >= 0 && currentRow < newMapData.objectsLayer.length &&
-              currentCol >= 0 && currentCol < newMapData.objectsLayer[0].length &&
-              playerData[i][j] !== null) {
-            newMapData.objectsLayer[currentRow][currentCol] = playerData[i][j] || '';
-          }
-        }
+    try {
+      console.log('Cell clicked:', { rowIndex, colIndex, currentMode });
+      
+      if (!currentMapData) {
+        console.log('No current map data');
+        return;
       }
       
-      // Save the new player position
-      setLastPlayerPosition({ rowIndex, colIndex });
-      setIsPlacingPlayer(false);
-    } else if (currentMode === 'helper') {
-      // Check if there's already a helper point at this location
-      const existingPoint = helperPoints.find(
-        point => point.position.row === rowIndex && point.position.col === colIndex
-      );
-  
-      if (existingPoint) {
-        // If clicking an existing point while in helper mode, remove it
-        setHelperPoints(points => points.filter(point => point.id !== existingPoint.id));
-      } else {
-        // Add new helper point
-        const newHelperPoint: HelperPoint = {
-          id: `helper_${Date.now()}`,
-          position: { row: rowIndex, col: colIndex },
-          color: selectedColor
-        };
-        setHelperPoints(prevPoints => [...prevPoints, newHelperPoint]);
-        setSelectedHelperPoint(newHelperPoint);
-        setShowNoteModal(true);
+      let newMapData = { ...currentMapData };
+      
+      switch (currentMode) {
+        case 'helper':
+          handleHelperPointAction(rowIndex, colIndex);
+          break;
+          
+        case 'player':
+              if (playerData.length > 0) {
+                  setIsPlacingPlayer(true);
+              if (lastPlayerPosition) {
+                newMapData = removeLastPlayer(newMapData);
+              }
+              // Calculate center offset
+              const playerHeight = playerData.length;
+              const playerWidth = playerData[0].length;
+              const startRow = rowIndex - Math.floor(playerHeight / 2);
+              const startCol = colIndex - Math.floor(playerWidth / 2);
+
+              // Place player sprite centered on click position
+              for (let i = 0; i < playerHeight; i++) {
+                for (let j = 0; j < playerWidth; j++) {
+                  const currentRow = startRow + i;
+                  const currentCol = startCol + j;
+                  
+                  if (currentRow >= 0 && currentRow < newMapData.objectsLayer.length &&
+                      currentCol >= 0 && currentCol < newMapData.objectsLayer[0].length &&
+                      playerData[i][j] !== null) {
+                    newMapData.objectsLayer[currentRow][currentCol] = playerData[i][j] || '';
+                  }
+                }
+              }
+              
+              // Save the new player position
+              setLastPlayerPosition({ rowIndex, colIndex });
+              setIsPlacingPlayer(false);
+          }
+          break;
+          
+        case 'draw':
+          if (isDrawingAllowed) {
+            newMapData.objectsLayer[rowIndex][colIndex] = isEraser ? '' : selectedColor;
+            setCurrentMapData(newMapData);
+          }
+          break;
+          
+        default:
+          console.log('Unknown mode:', currentMode);
       }
-    } else if (currentMode === 'draw') {
-      // Drawing mode
-      newMapData.objectsLayer[rowIndex][colIndex] = isEraser ? '' : selectedColor;
+    } catch (error) {
+      console.error('Error in handleCellClick:', error);
     }
-    
-    setCurrentMapData(newMapData);
   };
+
+
   const handleHelperPointClick = (point: HelperPoint) => {
     setSelectedHelperPoint(point);
     setShowNoteModal(true);
@@ -218,6 +243,7 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
     setShowNoteModal(false);
     setSelectedHelperPoint(null);
   };
+  
 
   const toggleHelperVisibility = () => {
     setShowHelpers(!showHelpers);
@@ -366,7 +392,7 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
       return emptyProgress;
     }
   });
-  const saveGameState = useCallback(() => {
+  const saveGameState = useCallback(async () => {
     if (!currentMapData) return;
     
     const savedState: SavedGameState = {
@@ -374,7 +400,7 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
         backgroundLayer: currentMapData.backgroundLayer,
         objectsLayer: currentMapData.objectsLayer
       },
-      helperPoints,
+      helperPoints: helperPoints,
       gameProgress: {
         solvedPuzzles: Array.from(gameProgress.solvedPuzzles),
         recoveredAreas: Array.from(gameProgress.recoveredAreas),
@@ -383,45 +409,76 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
             .map(([key, value]) => [key, Array.from(value)])
         )
       },
-      lastPlayerPosition
+      lastPlayerPosition,
+      timestamp: Date.now()
     };
   
-    localStorage.setItem(`game_state_${mapId}`, JSON.stringify(savedState));
+    const success = await gameStorage.save(`game_state_${mapId}`, savedState);
+    if (!success) {
+      const sessionStorage = new GameStorage({ useSessionStorage: true });
+      await sessionStorage.save(`game_state_${mapId}`, savedState);
+    }
   }, [currentMapData, helperPoints, gameProgress, lastPlayerPosition, mapId]);
+
+
+  const loadGameState = useCallback(async () => {
+    if (!mapData) return;
   
-  const loadGameState = useCallback(() => {
-    const savedState = localStorage.getItem(`game_state_${mapId}`);
-    if (!savedState || !mapData) return;
+    const loadFromStorage = async (storage: GameStorage) => {
+      console.log('Attempting to load game state...');
+      const savedState = await storage.load<SavedGameState | null>(
+        `game_state_${mapId}`,
+        null
+      );
   
-    try {
-      const parsed = JSON.parse(savedState) as SavedGameState;
-      
-      setCurrentMapData({
-        ...mapData,
-        backgroundLayer: parsed.recoveredColors.backgroundLayer,
-        objectsLayer: parsed.recoveredColors.objectsLayer
-      });
-      
-      setHelperPoints(parsed.helperPoints);
-      setGameProgress({
-        solvedPuzzles: new Set(parsed.gameProgress.solvedPuzzles),
-        recoveredAreas: new Set(parsed.gameProgress.recoveredAreas),
-        solvedHiddenTests: Object.fromEntries(
-          Object.entries(parsed.gameProgress.solvedHiddenTests)
-            .map(([key, value]) => [key, new Set(value)])
-        )
-      });
-      
-      if (parsed.lastPlayerPosition) {
-        setLastPlayerPosition(parsed.lastPlayerPosition);
+      if (savedState) {
+        console.log('Found saved state:', savedState);
+        setCurrentMapData({
+          ...mapData,
+          backgroundLayer: savedState.recoveredColors.backgroundLayer,
+          objectsLayer: savedState.recoveredColors.objectsLayer
+        });
+        
+        // Ensure helperPoints is always an array
+        const points = Array.isArray(savedState.helperPoints) ? savedState.helperPoints : [];
+        console.log('Setting helper points:', points);
+        setHelperPoints(points);
+        
+        setGameProgress({
+          solvedPuzzles: new Set(savedState.gameProgress.solvedPuzzles),
+          recoveredAreas: new Set(savedState.gameProgress.recoveredAreas),
+          solvedHiddenTests: Object.fromEntries(
+            Object.entries(savedState.gameProgress.solvedHiddenTests)
+              .map(([key, value]) => [key, new Set(value)])
+          )
+        });
+        
+        if (savedState.lastPlayerPosition) {
+          setLastPlayerPosition(savedState.lastPlayerPosition);
+        }
+  
+        setIsVictory(savedState.gameProgress.solvedPuzzles.length === mapData.interactiveTiles.length);
+        setIsExplorationMode(savedState.gameProgress.solvedPuzzles.length === mapData.interactiveTiles.length);
+        
+        return true;
       }
+      console.log('No saved state found');
+      return false;
+    };
   
-      setIsVictory(parsed.gameProgress.solvedPuzzles.length === mapData.interactiveTiles.length);
-      setIsExplorationMode(parsed.gameProgress.solvedPuzzles.length === mapData.interactiveTiles.length);
+    // Try localStorage first
+    const mainStorage = new GameStorage();
+    try {
+      const loaded = await loadFromStorage(mainStorage);
+      if (!loaded) {
+        console.warn('Failed to load from localStorage, trying sessionStorage');
+        const sessionStorage = new GameStorage({ useSessionStorage: true });
+        await loadFromStorage(sessionStorage);
+      }
     } catch (error) {
       console.error('Error loading game state:', error);
     }
-  }, [mapId, mapData]); 
+  }, [mapId, mapData]);
   
   useEffect(() => {
     loadGameState();

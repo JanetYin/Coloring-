@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapData } from '@/types';
 
 interface MapDisplayProps {
@@ -7,9 +7,29 @@ interface MapDisplayProps {
 }
 
 const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, className = '' }) => {
-  const [position, setPosition] = useState({ x: -40, y: 0 }); // Initial offset from top-left
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 15});
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (!containerRef.current || !mapData?.backgroundLayer) return;
+      
+      const COLS = mapData.backgroundLayer[0].length;
+      const ROWS = mapData.backgroundLayer.length;
+      
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const scaleX = containerRect.width / COLS;
+      const scaleY = containerRect.height / ROWS;
+      setScale(Math.min(scaleX, scaleY));
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, [mapData]);
 
   if (!mapData?.backgroundLayer) {
     return <div className="w-full h-full flex items-center justify-center text-[#937b6a] font-pixel">
@@ -19,11 +39,6 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, className = '' }) => {
 
   const COLS = mapData.backgroundLayer[0].length;
   const ROWS = mapData.backgroundLayer.length;
-  const containerWidth = 1080;
-  const containerHeight = 460;
-  const scaleX = containerWidth / COLS;
-  const scaleY = containerHeight / ROWS;
-  const scale = Math.min(scaleX, scaleY);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -46,19 +61,21 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, className = '' }) => {
   };
 
   return (
+    <div 
+      ref={containerRef}
+      className={`w-full h-full absolute overflow-hidden bg-transparent ${className}`}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
       <div 
-        className={`w-full h-full absolute overflow-hidden bg-transparent ${className}`}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
-      <div 
-        className="grid absolute cursor-grab"
+        className="absolute cursor-grab"
         style={{
-          gridTemplateColumns: `repeat(${COLS}, 1px)`,
+          display: 'grid',
+          gridTemplateColumns: `repeat(${COLS}, ${Math.max(2, scale)}px)`,
           gap: '0px',
-          transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+          transform: `translate(${position.x}px, ${position.y}px)`,
           transformOrigin: 'top left',
           cursor: isDragging ? 'grabbing' : 'grab'
         }}
@@ -69,8 +86,8 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, className = '' }) => {
               key={`${rowIndex}-${colIndex}`}
               className="relative"
               style={{
-                width: '1px',
-                height: '1px',
+                width: `${Math.max(2, scale)}px`,
+                height: `${Math.max(2, scale)}px`,
                 backgroundColor: cellColor,
               }}
             >

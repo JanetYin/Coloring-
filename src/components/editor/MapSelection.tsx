@@ -3,14 +3,13 @@ import { Upload, X } from 'lucide-react';
 import type { MapData } from '@/types';
 import { defaultMaps } from '@/lib/maps';
 
-
-
 interface CustomMap {
   id: string;
   name: string;
   description: string;
   icon: string;
   data: MapData;
+  timestamp: number;
 }
 
 interface MapSelectionProps {
@@ -22,7 +21,21 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
   const [customMaps, setCustomMaps] = useState<CustomMap[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load custom maps from localStorage on component mount
+  const clearOldMaps = () => {
+    try {
+      const maps = [...customMaps].sort((a, b) => b.timestamp - a.timestamp);
+      if (maps.length > 5) {
+        const mapsToRemove = maps.slice(5);
+        mapsToRemove.forEach(map => {
+          localStorage.removeItem(`map_${map.id}`);
+        });
+        setCustomMaps(maps.slice(0, 5));
+      }
+    } catch (error) {
+      console.warn('Error cleaning up old maps:', error instanceof Error ? error.message : 'Unknown error');
+    }
+  };
+
   useEffect(() => {
     const loadCustomMaps = () => {
       const storedMaps = localStorage.getItem('customMaps');
@@ -31,7 +44,7 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
           const parsedMaps = JSON.parse(storedMaps);
           setCustomMaps(parsedMaps);
         } catch (error) {
-          alert(`Error loading maps: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.error('Error loading maps:', error instanceof Error ? error.message : 'Unknown error');
         }
       }
     };
@@ -39,9 +52,14 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
     loadCustomMaps();
   }, []);
 
-  // Save custom maps to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('customMaps', JSON.stringify(customMaps));
+    try {
+      localStorage.setItem('customMaps', JSON.stringify(customMaps));
+    } catch (error) {
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        clearOldMaps();
+      }
+    }
   }, [customMaps]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,24 +67,35 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
     if (!file) return;
 
     try {
+      if (customMaps.length >= 5) {
+        clearOldMaps();
+      }
+
       const text = await file.text();
       const mapData: MapData = JSON.parse(text);
       
-      // Create a new custom map entry with a unique ID
       const newCustomMap: CustomMap = {
-        id: `custom-${Date.now()}`, // Use string ID with prefix
+        id: `custom-${Date.now()}`,
         name: file.name.replace('.json', ''),
         description: 'Custom uploaded map',
         icon: '📍',
-        data: mapData
+        data: mapData,
+        timestamp: Date.now()
       };
 
-      // Save the map data to localStorage
-      localStorage.setItem(`map_${newCustomMap.id}`, JSON.stringify(mapData));
+      try {
+        localStorage.setItem(`map_${newCustomMap.id}`, JSON.stringify(mapData));
+      } catch (error) {
+        if (error instanceof Error && error.name === 'QuotaExceededError') {
+          clearOldMaps();
+          localStorage.setItem(`map_${newCustomMap.id}`, JSON.stringify(mapData));
+        } else {
+          throw error;
+        }
+      }
       
       setCustomMaps(prev => [...prev, newCustomMap]);
       
-      // Show success notification
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-[#87a985] text-[#e6d9bd] px-4 py-2 rounded-lg font-pixel z-50 transition-opacity duration-500';
       notification.textContent = 'Map uploaded successfully!';
@@ -76,10 +105,10 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
         setTimeout(() => document.body.removeChild(notification), 500);
       }, 2000);
     } catch (error) {
-      alert(`Error loading map: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error loading map:', error instanceof Error ? error.message : 'Unknown error');
+      alert('Failed to load map. Please try clearing some space or removing old maps.');
     }
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -88,7 +117,7 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
   const removeCustomMap = (mapId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setCustomMaps(prev => prev.filter(map => map.id !== mapId));
-    localStorage.removeItem(`map_${mapId}`); // Remove map data from localStorage
+    localStorage.removeItem(`map_${mapId}`);
     if (selectedMapId === mapId) {
       onSelectMap('');
     }
@@ -104,11 +133,13 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
         const mapData = await response.json();
         onSelectMap(mapId, mapData);
       } catch (error) {
-        console.error('Error loading map:', error);
+        console.error('Error loading map:', error instanceof Error ? error.message : 'Unknown error');
         alert('Failed to load map');
       }
     }
   };
+
+
 
   return (
     <div className="h-full flex flex-col">

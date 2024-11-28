@@ -6,7 +6,7 @@ export const defaultMaps = [
     //   icon: '🎯'
     // },
     { 
-      id: 'tree-hw-map', 
+      id: 'learn-tree', 
       name: 'Trees', 
       description: 'Navigate through treetop puzzles',
       icon: '🌳'
