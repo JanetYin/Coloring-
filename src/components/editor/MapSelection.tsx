@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Upload, X } from 'lucide-react';
 import type { MapData } from '@/types';
 import { defaultMaps } from '@/lib/maps';
@@ -21,7 +21,7 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
   const [customMaps, setCustomMaps] = useState<CustomMap[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const clearOldMaps = () => {
+  const clearOldMaps = useCallback(() => {
     try {
       const maps = [...customMaps].sort((a, b) => b.timestamp - a.timestamp);
       if (maps.length > 5) {
@@ -34,7 +34,7 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
     } catch (error) {
       console.warn('Error cleaning up old maps:', error instanceof Error ? error.message : 'Unknown error');
     }
-  };
+  }, [customMaps]);
 
   useEffect(() => {
     const loadCustomMaps = () => {
@@ -60,7 +60,8 @@ const MapSelection: React.FC<MapSelectionProps> = ({ onSelectMap, selectedMapId 
         clearOldMaps();
       }
     }
-  }, [customMaps]);
+  }, [customMaps, clearOldMaps]); 
+  
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

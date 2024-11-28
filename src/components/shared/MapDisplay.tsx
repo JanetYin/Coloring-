@@ -38,7 +38,6 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, className = '' }) => {
   }
 
   const COLS = mapData.backgroundLayer[0].length;
-  const ROWS = mapData.backgroundLayer.length;
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);

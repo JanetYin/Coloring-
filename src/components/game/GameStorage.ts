@@ -1,4 +1,3 @@
-import { SavedGameState } from '@/types';
 
 interface StorageOptions {
   useSessionStorage?: boolean;
