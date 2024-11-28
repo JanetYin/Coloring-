@@ -167,9 +167,9 @@ export class GameStorage {
         if (!data) return fallback;
         
         const parsed = JSON.parse(data);
-        
-        const { timestamp: _, ...result } = parsed;
-        return result as T;
+        // Remove timestamp property and return rest of data without destructuring
+        delete parsed.timestamp;
+        return parsed as T;
       } catch (error) {
         attempts++;
         
