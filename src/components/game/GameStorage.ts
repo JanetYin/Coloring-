@@ -157,18 +157,18 @@ export class GameStorage {
     if (!this.storage || !(await this.checkStorageAvailability())) {
       return fallback;
     }
-
+  
     const prefixedKey = `${this.prefix}${key}`;
     let attempts = 0;
-
+  
     while (attempts < this.maxRetries) {
       try {
         const data = this.storage.getItem(prefixedKey);
         if (!data) return fallback;
         
         const parsed = JSON.parse(data);
-        // Return the actual data without the timestamp
-        const { timestamp, ...result } = parsed;
+        
+        const { timestamp: _, ...result } = parsed;
         return result as T;
       } catch (error) {
         attempts++;
@@ -178,11 +178,11 @@ export class GameStorage {
           this.storage.removeItem(prefixedKey); // Remove invalid data
           return fallback;
         }
-
+  
         await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, attempts)));
       }
     }
-
+  
     return fallback;
   }
 
