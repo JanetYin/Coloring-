@@ -11,8 +11,11 @@ import MapSelection from '@/components/editor/MapSelection';
 import { EditorMode, MapData } from '@/types';
 import MapDisplay from '@/components/shared/MapDisplay';
 import { FinishedMapResponse ,loadDefaultFinishedMap } from '@/lib/defaultFinishedMap';
+import WelcomeModal from '@/components/ui/WelcomeModal';
+import HelpButton from '@/components/ui/HelpButton';
 
 const pixelifySans = Pixelify_Sans({ subsets: ['latin'], weight: ['400', '500', '700'] });
+
 
 const NavigationBar = ({ currentMode, setCurrentMode }: { currentMode: EditorMode, setCurrentMode: (mode: EditorMode) => void }) => {
   if (currentMode === 'home') return null;
@@ -36,6 +39,20 @@ export default function Home() {
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [isEraser, setIsEraser] = useState(false);
   const [displayMap, setDisplayMap] = useState<MapData | null>(null);
+
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    if (!hasSeenWelcome) {
+      setShowWelcome(true);
+    }
+  }, []);
+
+  const handleWelcomeClose = () => {
+    localStorage.setItem('hasSeenWelcome', 'true');
+    setShowWelcome(false);
+  };
 
 
   useEffect(() => {
@@ -193,6 +210,8 @@ export default function Home() {
           </div>
         )}
       </div>
+      <WelcomeModal isOpen={showWelcome} onClose={handleWelcomeClose} />
+      <HelpButton mode={currentMode} />
     </div>
   );
 }

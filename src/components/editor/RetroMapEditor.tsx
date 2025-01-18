@@ -39,7 +39,7 @@ const RetroMapEditor: React.FC = () => {
 
   // Layers
   const [backgroundLayer, setBackgroundLayer] = useState<string[][]>(() => 
-    Array(ROWS).fill(null).map(() => Array(COLS).fill('#eee1c4'))
+    Array(ROWS).fill(null).map(() => Array(COLS).fill('#eee1c4')) //'#eee1c4'
   );
   const [objectsLayer, setObjectsLayer] = useState<string[][]>(() => 
     Array(ROWS).fill(null).map(() => Array(COLS).fill(''))

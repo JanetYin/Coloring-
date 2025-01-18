@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import GameStage from './GameStage';
 import PuzzleModal from './PuzzleModal';
 import HelperNoteModal from './NoteModal';
+import HelpButton from '@/components/ui/HelpButton';
 import { MapData, InteractiveTile, HelperPoint, HelperNote, GameProgress, SavedGameState } from '@/types';
 import { defaultColors } from '@/components/shared/ColorPalette';
 import WinModal from './WinModal';
@@ -568,6 +569,7 @@ const GameSession: React.FC<GameSessionProps> = ({ mapId, mapData }) => {
         onContinueExploring={handleContinueExploring}
         />
       )}
+      <HelpButton mode="coloring" />
     </div>
   );
   };
