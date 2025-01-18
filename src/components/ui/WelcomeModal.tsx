@@ -25,8 +25,8 @@ const WelcomeModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
         title: "Getting Started",
         content: (
           <div className="space-y-4">
-              <p>
-              Ready to bring color back to these maps? Each completed challenge becomes a testament to your learning journey - a colorful masterpiece you can showcase through the 'Your Adventure Awaits' button!
+             <p>
+            Ready to bring color back to these maps? Each completed challenge becomes a testament to your learning journey - a colorful masterpiece you can showcase through the &apos;Your Adventure Awaits&apos; button!
             </p>
             {/* <ul className="space-y-2">
               <li>• Select your preferred mode to begin</li>

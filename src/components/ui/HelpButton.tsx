@@ -104,7 +104,7 @@ const HelpButton = ({ mode }: { mode: EditorMode }) => {
               </div>
 
               <div className="mt-4 text-sm text-[#6f8b6e] italic">
-                    Tip: &quot;Make sure to save your map after adding or editing puzzles!&quot;
+                Tip: "Make sure to save your map after adding or editing puzzles!"
               </div>
             </div>
           )
